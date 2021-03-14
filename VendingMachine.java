@@ -30,13 +30,18 @@ class VendingMachine{
 
         boolean done = false;
         while (done == false){
-            System.out.println("Enter Combination to select a snack. Enter 0 to exit.");
+            System.out.println("Enter combination to select a snack. Example: A1 for the snack in the first row and first column. Enter 0 to exit.");
             String select = s.next();
             if(select.length() == 2){
+                try{
                 int r = hm.get(select.charAt(0));
                  int c = Character.getNumericValue(select.charAt(1)) - 1;
                  calculatePayment(r, c);
             }
+            catch(NullPointerException e){
+                System.out.printf("Row at %c does not exist. Try another combination.\n", select.charAt(0));
+            }
+        }
             else if(select.equals("0")){
                 done = true;
             }
@@ -189,10 +194,11 @@ private void setSnack(String[] properties, int r, int c){
      * @param column the selected column of the vending machine
      */
 public void calculatePayment(int r, int c){
-double price = inventory[r][c].getPrice();
-
-System.out.println("Selected " + inventory[r][c].getName() + ".");
-System.out.println("Total price is: " + price + ".");
+    try{
+    double price = inventory[r][c].getPrice();
+   
+System.out.printf("Selected %s. \n", inventory[r][c].getName());
+System.out.printf("Total price is: $%.2f.\n", price);
 
 boolean hasPaid = false;
 while(hasPaid == false){
@@ -201,7 +207,7 @@ while(hasPaid == false){
 double payment = s.nextDouble();
 if(payment >= price){
     double change = payment - price;
-    System.out.printf("Thank you. Your change is: %.2f\n", change);
+    System.out.printf("Thank you. Your change is: %.2f.\n", change);
     hasPaid = true;
     recordTransaction(r, c, price, payment, change);
 }
@@ -209,7 +215,10 @@ else{
     System.out.println("Payment is less than price.");
 }
 }
-
+}
+catch(NullPointerException e){
+    System.out.println("No snack found. Try another combination.");
+}
 }
  /**
      * recordTransaction records the current transaction into the txt file
