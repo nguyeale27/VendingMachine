@@ -19,7 +19,7 @@ class VendingMachine{
     StringBuffer sb;
     int totalRows, totalColumns;
     /**
-     * 
+     * Constructor for VendingMachine
      */
     public VendingMachine(){
         record = new File("Transactions.txt");
@@ -51,10 +51,9 @@ class VendingMachine{
         }
     }
 public static void main (String[] args){
-    VendingMachine vm = new VendingMachine();
-    //vm.inventory[0][0] = new VendingSnack("Snickers", 10, 1.35);
-    //vm.calculatePayment(0,0);
+    new VendingMachine();
 }
+
  /**
      * readInput Takes input file and sends it into a StringBuffer for creating VendingSnacks.
      */
@@ -75,8 +74,7 @@ private void readInput(){
     }
         }
 catch (IOException e) {
-    // TODO Auto-generated catch block
-    e.printStackTrace();
+    System.out.println("Error with FileReader");
         }
 }
 
@@ -195,25 +193,32 @@ private void setSnack(String[] properties, int r, int c){
      */
 public void calculatePayment(int r, int c){
     try{
-    double price = inventory[r][c].getPrice();
+        
+        if(inventory[r][c].getAmount() > 0){
+            double price = inventory[r][c].getPrice();
    
-System.out.printf("Selected %s. \n", inventory[r][c].getName());
-System.out.printf("Total price is: $%.2f.\n", price);
+            System.out.printf("Selected %s. \n", inventory[r][c].getName());
+            System.out.printf("Total price is: $%.2f.\n", price);
 
-boolean hasPaid = false;
-while(hasPaid == false){
+            boolean hasPaid = false;
+            while(hasPaid == false){
 
-    System.out.println("Please enter payment amount.");
-double payment = s.nextDouble();
-if(payment >= price){
-    double change = payment - price;
-    System.out.printf("Thank you. Your change is: %.2f.\n", change);
-    hasPaid = true;
-    recordTransaction(r, c, price, payment, change);
+                System.out.println("Please enter payment amount.");
+                double payment = s.nextDouble();
+                if(payment >= price){
+                    double change = payment - price;
+                    System.out.printf("Thank you. Your change is: %.2f.\n", change);
+                    hasPaid = true;
+                    recordTransaction(r, c, price, payment, change);
+                    inventory[r][c].subtractAmount();
+                                    }
+        else{
+                System.out.println("Payment is less than price.");
+            }
+    }
 }
 else{
-    System.out.println("Payment is less than price.");
-}
+    System.out.println("This snack has run out.");
 }
 }
 catch(NullPointerException e){
@@ -236,8 +241,7 @@ private void recordTransaction(int r, int c, double price, double payment, doubl
         fw.append(s);
         fw.close();
     } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        System.out.println("Error with FileWriter.");
     }
 }
 }
