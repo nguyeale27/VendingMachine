@@ -3,6 +3,7 @@ class VendingSnack{
     private int amount;
     private double price;
     public VendingSnack(String n, int a, double p){
+        n.trim();
         name = n;
         amount = a;
         price = p;

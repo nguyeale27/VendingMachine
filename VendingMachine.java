@@ -17,7 +17,7 @@ class VendingMachine{
     FileWriter fw;
     FileReader fr;
     StringBuffer sb;
-
+    int totalRows, totalColumns;
     /**
      * 
      */
@@ -26,13 +26,16 @@ class VendingMachine{
         i = new File("input.json");
         readInput();
         setRowsAndColumns();
-        //setMachine();
+        setMachine();
+
         boolean done = false;
         while (done == false){
             System.out.println("Enter Combination to select a snack. Enter 0 to exit.");
             String select = s.next();
             if(select.length() == 2){
-                
+                int r = hm.get(select.charAt(0));
+                 int c = Character.getNumericValue(select.charAt(1)) - 1;
+                 calculatePayment(r, c);
             }
             else if(select.equals("0")){
                 done = true;
@@ -58,6 +61,7 @@ private void readInput(){
     fr.close();
     sb = new StringBuffer();
     sb.append(c);
+    sb.trimToSize();
     for(int x = 0; x <sb.length(); x++){
         Character ch = sb.charAt(x);
     if(ch.equals('"') == true){
@@ -76,33 +80,42 @@ catch (IOException e) {
      * setMachine creates VendingSnack objects from the given input
      */
 private void setMachine(){
-//Read StringBuffer, s.indexOf();get sb.charAt, cut from start to where charAt is
-    //sb.substring(start)
-    String s = sb.toString();
-    //s.indexOf(str)
-    String name = "name";
-    String amount = "amount";
     boolean b = false;
-    sb.indexOf(name);
+
+    if(sb.toString().contains("items") == true){
+        sb.delete(0, sb.indexOf("items"));
+        int currentRow = 0; 
+        int currentColumn = 0;
+
     while(b == false){
-        if(s.contains("name") == true){
-            //System.out.println(sb.substring(sb.indexOf(name),sb.indexOf(amount)));
-            s = sb.substring(sb.indexOf(amount));
-            sb.replace(sb.indexOf(name), sb.indexOf(amount), "");
-            System.out.println(s);
-        }
-        else if (s.contains("amount") == true){
-            b = true;
-        }
-        else if (s.contains("price") == true){
-            b = true;
+        if(sb.toString().contains("name") == true && sb.toString().contains("amount") == true 
+        && sb.toString().contains("price") == true){
+            String[] properties = new String[3];
+            properties[0] = sb.substring(sb.indexOf("name"), sb.indexOf("amount"));
+            properties[1] = sb.substring(sb.indexOf("amount"), sb.indexOf("price"));
+            properties[2] = sb.substring(sb.indexOf("price"), sb.indexOf("}"));
+            setSnack(properties,currentRow,currentColumn);
+
+            sb.delete(sb.indexOf("name"), sb.indexOf("}")+1);
+            if(currentColumn >= totalColumns-1)
+            {
+                currentColumn = 0;
+                currentRow++;
+            }
+            else{
+                currentColumn++;
+            }
         }
         else{
             b = true;
         }
     }
 }
-
+}
+/**
+     * setRowsAndColumns Takes the specified number of rows and columns and creates a 2D array
+     * carrying the VendingSnack objects with them.
+     */
 private void setRowsAndColumns(){
     String s = sb.toString();
 
@@ -115,16 +128,59 @@ private void setRowsAndColumns(){
         c = c.replaceAll("columns", "");
         c = c.replace(':', ' '); c = c.replace(',', ' '); c = c.trim();
 
-        inventory = new VendingSnack[Integer.parseInt(r)][Integer.parseInt(c)];
+        totalRows = Integer.parseInt(r);
+        totalColumns = Integer.parseInt(c);
+
+        inventory = new VendingSnack[totalRows][totalColumns];
         setRowLetters(Integer.parseInt(r));
     }
 }
+/**
+     * setMachine creates VendingSnack objects from the given input
+     */
 private void setRowLetters(int numRows){
     char c = 'A'; 
     for(int i = 0; i<numRows;i++){
-        hm.put(c, i+1);
+        hm.put(c, i);
         c += 1;
     }
+}
+/**
+     * calculatePayment calculates the transaction for the selected snack.
+     * 
+     * @param properties carries the name, amount, and price information needed to create the VendingSnack object.
+     * @param r the selected row of the vending machine
+     * @param c the selected column of the vending machine
+     */
+private void setSnack(String[] properties, int r, int c){
+    String name = "";
+    int amount = 0;
+    double price = 0;
+    for (String s : properties) {
+        
+        if(s.contains("name") == true){
+            s = s.replaceAll("name", "");
+            s = s.replace(':', ' '); s = s.replace(',', ' ');
+            s = s.replace('"', ' '); s = s.trim();
+
+            name = s;
+        }
+        else if(s.contains("amount") == true){
+            s = s.replaceAll("amount", "");
+            s = s.replace(':', ' '); s = s.replace(',', ' ');
+            s = s.replace('"', ' '); s = s.trim();
+
+            amount = Integer.parseInt(s);
+        }
+        else if(s.contains("price") == true){
+            s = s.replaceAll("price", "");
+            s = s.replace(':', ' '); s = s.replace(',', ' ');
+            s = s.replace('"', ' ');s = s.replace('$', ' '); s = s.trim();
+
+            price = Double.parseDouble(s);
+        }
+    }
+    inventory[r][c] = new VendingSnack(name, amount, price);
 }
  /**
      * calculatePayment calculates the transaction for the selected snack.
@@ -132,10 +188,10 @@ private void setRowLetters(int numRows){
      * @param row the selected row of the vending machine
      * @param column the selected column of the vending machine
      */
-public void calculatePayment(int row, int column){
-double price = inventory[row][column].getPrice();
+public void calculatePayment(int r, int c){
+double price = inventory[r][c].getPrice();
 
-System.out.println("Selected " + inventory[row][column].getName() + ".");
+System.out.println("Selected " + inventory[r][c].getName() + ".");
 System.out.println("Total price is: " + price + ".");
 
 boolean hasPaid = false;
@@ -147,7 +203,7 @@ if(payment >= price){
     double change = payment - price;
     System.out.printf("Thank you. Your change is: %.2f\n", change);
     hasPaid = true;
-    recordTransaction(row, column, price, payment, change);
+    recordTransaction(r, c, price, payment, change);
 }
 else{
     System.out.println("Payment is less than price.");
@@ -161,14 +217,14 @@ else{
      * @param row the selected row of the vending machine
      * @param column the selected column of the vending machine
      */
-private void recordTransaction(int row, int column, double price, double payment, double change){
+private void recordTransaction(int r, int c, double price, double payment, double change){
     try {
       
         fw = new FileWriter(record);
       
-        String name = inventory[row][column].getName();
+        String name = inventory[r][c].getName();
         String s = String.format("Transaction: %s purchased. Payment: $%.2f. Total Change: $%.2f.", name, payment, change);
-        fw.write(s);
+        fw.append(s);
         fw.close();
     } catch (IOException e) {
         // TODO Auto-generated catch block
