@@ -198,15 +198,18 @@ private void setSnack(String[] properties, int r, int c){
 private void addSnack(){
     char c = 'A';
     c += currentRow;
-    String[] properties = new String[3];
+    String[] snack = new String[3];
     System.out.println("Enter the name of the snack.");
-    properties[0] = s.nextLine();
+    String n = "name " + s.nextLine();
+    snack[0] = n;
     System.out.println("Enter the amount of the snack.");
-    properties[1] = s.nextLine();
+    String a = "amount " + s.nextLine();
+    snack[1] = a;
     System.out.println("Enter the price of the snack.");
-    properties[2] = s.nextLine();
-    setSnack(properties, currentRow, currentColumn);
-    System.out.printf("Snack added at row %c, column %d.\n", c, currentColumn);
+    String p = "price " + s.nextLine();
+    snack[2] = p;
+    setSnack(snack, currentRow, currentColumn);
+    System.out.printf("Snack added at row %c, column %d.\n", c, currentColumn + 1);
     if(currentColumn >= totalColumns-1) //Program goes through columns first before moving on to the next row
     {
         currentColumn = 0;
@@ -261,7 +264,7 @@ public void calculatePayment(int r, int c){
             while(hasPaid == false){
 
                 System.out.println("Please enter payment amount.");
-                double payment = s.nextDouble();
+                double payment = Double.parseDouble(s.nextLine());
                 if(payment >= price){ //If the entered payment covers the price
                     double change = payment - price;
                     System.out.printf("Thank you. Your change is: %.2f.\n", change);
