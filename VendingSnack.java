@@ -1,3 +1,6 @@
+/**
+ * VendingSnack is used to represent the snacks in VendingMachine
+ */
 class VendingSnack{
     private String name;
     private int amount;

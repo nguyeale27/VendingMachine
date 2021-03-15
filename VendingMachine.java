@@ -5,9 +5,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Scanner;
-
-
-
+/**
+ * VendingMachine represents the main program that simulates the functions of a vending machine.
+ * 
+ */
 class VendingMachine{
 
      HashMap<Character,Integer> hm = new HashMap<Character, Integer>(); //used to convert row letters to numbers
@@ -19,6 +20,7 @@ class VendingMachine{
     FileReader fr;
     StringBuffer sb;
     int totalRows, totalColumns;
+    int currentRow, currentColumn;
     /**
      * Constructor for VendingMachine
      */
@@ -32,31 +34,28 @@ class VendingMachine{
         fw = new FileWriter(record);
         boolean done = false;
         while (done == false){ //Allows the user to enter combinations until they are done
-            System.out.println("Enter combination to select a snack. Example: A1 for the snack in the first row and first column. Enter 0 to exit.");
-            String select = s.next();
-            if(select.length() == 2){
-                try{
-                int r = hm.get(select.charAt(0));
-                 int c = Character.getNumericValue(select.charAt(1)) - 1;
-                 calculatePayment(r, c);
-            }
-            catch(NullPointerException e){
-                System.out.printf("Row at %c does not exist. Try another combination.\n", select.charAt(0));
-            }
-        }
-            else if(select.equals("0")){ //Exits the program
+            System.out.println("Enter 'a' to add a snack. Enter 'p' to purchase a snack. Enter 0 to exit.");
+            String choice = s.nextLine();
+                if(choice.equals("p")){
+                selectSnack();
+                }
+                else if(choice.equals("a")){
+                addSnack();
+                }
+                else if(choice.equals("0")){
                 done = true;
+                }
+                else{
+                    System.out.println("Invalid input. Please try again.");
+                }
             }
-            else{
-                System.out.println("Invalid combination.");
-            }
-        }
+            
         fw.close();
     }
     catch(IOException e){
         System.out.println("Error with Transaction file");
-    }
-    }
+        }
+}
 public static void main (String[] args){
     new VendingMachine();
 }
@@ -66,19 +65,19 @@ public static void main (String[] args){
      */
 private void readInput(){
     try{
-    char[] c = new char[10000];
-    fr = new FileReader(i);
-    fr.read(c);
-    fr.close();
-    sb = new StringBuffer();
-    sb.append(c);
-    sb.trimToSize();
-    for(int x = 0; x <sb.length(); x++){ //Takes out all of the quotation marks to trim the input
-        Character ch = sb.charAt(x);
-    if(ch.equals('"') == true){
-        sb.setCharAt(x, ' ');
-    }
-    }
+        char[] c = new char[10000];
+        fr = new FileReader(i);
+        fr.read(c);
+        fr.close();
+        sb = new StringBuffer();
+        sb.append(c);
+        sb.trimToSize();
+        for(int x = 0; x <sb.length(); x++){ //Takes out all of the quotation marks to trim the input
+            Character ch = sb.charAt(x);
+             if(ch.equals('"') == true){
+                sb.setCharAt(x, ' ');
+                                        }
+                                            }
         }
 catch (IOException e) {
     System.out.println("Error with FileReader");
@@ -94,8 +93,8 @@ private void setMachine(){
 
     if(sb.toString().contains("items") == true){
         sb.delete(0, sb.indexOf("items"));
-        int currentRow = 0; 
-        int currentColumn = 0;
+        currentRow = 0; 
+        currentColumn = 0;
 
     while(b == false){
         if(sb.toString().contains("name") == true && sb.toString().contains("amount") == true 
@@ -192,6 +191,57 @@ private void setSnack(String[] properties, int r, int c){
     }
     inventory[r][c] = new VendingSnack(name, amount, price);
 }
+/**
+ * SelectSnack Gives the user a prompt to add a snack
+ * 
+ */
+private void addSnack(){
+    char c = 'A';
+    c += currentRow;
+    String[] properties = new String[3];
+    System.out.println("Enter the name of the snack.");
+    properties[0] = s.nextLine();
+    System.out.println("Enter the amount of the snack.");
+    properties[1] = s.nextLine();
+    System.out.println("Enter the price of the snack.");
+    properties[2] = s.nextLine();
+    setSnack(properties, currentRow, currentColumn);
+    System.out.printf("Snack added at row %c, column %d.\n", c, currentColumn);
+    if(currentColumn >= totalColumns-1) //Program goes through columns first before moving on to the next row
+    {
+        currentColumn = 0;
+        currentRow++;
+    }
+    else{
+        currentColumn++;
+    }
+}
+/**
+ * SelectSnack Gives the user a prompt to purchase a snack
+ * 
+ */
+private void selectSnack(){
+    System.out.println("Enter combination to select a snack. Example: A1 for the snack in the first row and first column. Enter 0 to cancel and go back to the menu.");
+    String select = s.nextLine();
+    if(select.length() == 2){
+        try{
+        int r = hm.get(select.charAt(0));
+         int c = Character.getNumericValue(select.charAt(1)) - 1;
+         calculatePayment(r, c);
+    }
+    catch(NullPointerException e){
+        System.out.printf("Row at %c does not exist. Try another combination.\n", select.charAt(0));
+    }
+}
+    else if(select.equals("0")){ //Exits the method
+
+    }
+    else{
+        System.out.println("Invalid combination.");
+    }
+}
+
+
  /**
      * calculatePayment calculates the transaction for the selected snack.
      * 
