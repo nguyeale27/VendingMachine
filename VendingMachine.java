@@ -229,24 +229,31 @@ private void addSnack(){
  * 
  */
 private void selectSnack(){
+    boolean done = false;
+    while(done == false){
     System.out.println("Enter combination to select a snack. Example: A1 for the snack in the first row and first column. Enter 0 to cancel and go back to the menu.");
     String select = s.nextLine();
     if(select.length() == 2){
         try{
+            
         int r = hm.get(select.charAt(0));
          int c = Character.getNumericValue(select.charAt(1)) - 1;
-         calculatePayment(r, c);
+         VendingSnack snack = inventory[r][c];
+         calculatePayment(snack);
+         done = true;
     }
     catch(NullPointerException e){
-        System.out.printf("Row at %c does not exist. Try another combination.\n", select.charAt(0));
+        System.out.printf("No snack found. Please try again.");
     }
+    
 }
     else if(select.equals("0")){ //Exits the method
-
+        done = true;
     }
     else{
         System.out.println("Invalid combination.");
     }
+}
 }
 
 
@@ -256,13 +263,12 @@ private void selectSnack(){
      * @param row the selected row of the vending machine
      * @param column the selected column of the vending machine
      */
-public void calculatePayment(int r, int c){
-    try{
+public void calculatePayment(VendingSnack vs){
         
-        if(inventory[r][c].getAmount() > 0){//Checks to make sure that there is still a snack left to purchase
-            double price = inventory[r][c].getPrice();
+        if(vs.getAmount() > 0){//Checks to make sure that there is still a snack left to purchase
+            double price = vs.getPrice();
    
-            System.out.printf("Selected %s. \n", inventory[r][c].getName());
+            System.out.printf("Selected %s. \n", vs.getName());
             System.out.printf("Total price is: $%.2f.\n", price);
 
             boolean hasPaid = false;
@@ -274,8 +280,8 @@ public void calculatePayment(int r, int c){
                     double change = payment - price;
                     System.out.printf("Thank you. Your change is: %.2f.\n", change);
                     hasPaid = true;
-                    recordTransaction(r, c, price, payment, change);
-                    inventory[r][c].subtractAmount();
+                    recordTransaction(vs, price, payment, change);
+                    vs.subtractAmount();
                                     }
         else{
                 System.out.println("Payment is less than price.");
@@ -286,19 +292,15 @@ else{ //if the snack has run out
     System.out.println("This snack has run out.");
 }
 }
-catch(NullPointerException e){//If the combination does not have a snack
-    System.out.println("No snack found. Try another combination.");
-}
-}
  /**
      * recordTransaction records the current transaction into the txt file
      * 
      * @param row the selected row of the vending machine
      * @param column the selected column of the vending machine
      */
-private void recordTransaction(int r, int c, double price, double payment, double change){
+private void recordTransaction(VendingSnack vs, double price, double payment, double change){
     try {
-        String name = inventory[r][c].getName();
+        String name = vs.getName();
         String s = String.format("Transaction: %s purchased. Payment: $%.2f. Total Change: $%.2f. \n", name, payment, change);
         fw.append(s);
     } catch (IOException e) {
