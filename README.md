@@ -3,7 +3,7 @@
 Overview
 VendingMachine is a program developed in Visual Studio Code that simulates a vending machine. It reads off of a JSON file as an input for the items that will be added to the machine as well as how many there are and
 adds them as snacks the user can select. The user can also create snacks based on if the size of the vending machine allows it.
-Repository URL:
+Repository URL: https://github.com/nguyeale27/VendingMachine
 
 Approach
 First, the program takes the JSON file and reads it using FileReader to find the number of rows and columns as well as the information for each snack and builds a 2D array, where
