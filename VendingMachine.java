@@ -40,8 +40,13 @@ class VendingMachine{
                 selectSnack();
                 }
                 else if(choice.equals("a")){
-                addSnack();
-                }
+                    if(currentColumn > totalColumns || currentRow > totalRows){
+                        System.out.println("Vending Machine is full.");
+                    }
+                    else{
+                        addSnack();
+                        }
+                                            }
                 else if(choice.equals("0")){
                 done = true;
                 }
